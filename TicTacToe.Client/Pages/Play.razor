@@ -2,39 +2,84 @@
 @using System.Text
 @rendermode InteractiveServer
 
+
+<div class="playerturn">
+    <p>@(PlayerName)'s turn: X</p>
+</div>
+
 <div class="gameboard">
     @for (int row = 0; row < GameTable.Length; row++)
     {
         @for (int column = 0; column < GameTable[row].Length; column++)
         {
             <div class="box" id="row@(row)_col@(column)" style="@(GetBorderStyle(row, column))">
-                <p>@GameTable[row][column]</p>
+                <p>@(GetBoxValue(GameTable[row][column]))</p>
             </div>
         }
     }
 </div>
 
+<div class="result">
+    @switch (PlayerResult)
+    {
+        case Result.Win:
+            <p class="win">You've won!</p>
+            break;
+        case Result.Lose:
+            <p class="lose">You've lost!</p>
+            break;
+    }
+</div>
+
+<div class="replay">
+    <button class="btn btn-primary" @onclick="Replay">Replay</button>
+</div>
 
 @code {
     private const int _tableSize = 3;
 
-    public char[][] GameTable = new char[_tableSize][];
+    public enum Result
+    {
+        None = 0,
+        Lose = 1,
+        Win = 2
+    }
+
+    public string PlayerName { get; set; } = "Player 1";
+
+    public Result PlayerResult { get; set; } = Result.Win; // Result.None;
+
+    public int[][] GameTable = new int[_tableSize][];
 
     protected override void OnInitialized()
     {
-        InitializeGameTable();
+        InitializeGameTable(1);
     }
 
-    public void InitializeGameTable()
+    public char GetBoxValue(int boxValue) => boxValue switch
+    {
+        -1 => ' ',
+        0 => 'O',
+        1 => 'X',
+        _ => ' '
+    };
+
+    public void InitializeGameTable(int number)
     {
         for (int row = 0; row < _tableSize; row++)
         {
-            GameTable[row] = new char[_tableSize];
+            GameTable[row] = new int[_tableSize];
             for (int column = 0; column < _tableSize; column++)
             {
-                GameTable[row][column] = column % 2 == 0 ? 'X' : 'O';
+                GameTable[row][column] = number;
             }
         }
+    }
+
+    public void Replay()
+    {
+        PlayerResult = Result.None;
+        InitializeGameTable(-1);
     }
 
     public string GetBorderStyle(int row, int column)

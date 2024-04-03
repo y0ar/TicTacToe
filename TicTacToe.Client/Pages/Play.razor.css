@@ -28,7 +28,33 @@
     cursor: pointer;
 }
 
+.playerturn p {
+    font-size: 30px;
+    text-align: center;
+}
+
+.result {
+    font-size: 40px;
+    text-align: center;
+    margin-top: 60px;
+}
+
 .win {
     /*background: #48ceff;*/
-    color: lightgreen;
+    color: lightseagreen;
+}
+
+.lose {
+    /*background: #48ceff;*/
+    color: lightcoral;
+}
+
+.replay {
+    justify-content: center;
+    text-align: center;
+}
+
+.replay button {
+    margin-top: 15px;
+    font-size: 20px;
 }
