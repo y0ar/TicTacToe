@@ -1,0 +1,65 @@
+﻿@page "/play"
+@using System.Text
+@rendermode InteractiveServer
+
+<div class="gameboard">
+    @for (int row = 0; row < GameTable.Length; row++)
+    {
+        @for (int column = 0; column < GameTable[row].Length; column++)
+        {
+            <div class="box" id="row@(row)_col@(column)" style="@(GetBorderStyle(row, column))">
+                <p>@GameTable[row][column]</p>
+            </div>
+        }
+    }
+</div>
+
+
+@code {
+    private const int _tableSize = 3;
+
+    public char[][] GameTable = new char[_tableSize][];
+
+    protected override void OnInitialized()
+    {
+        InitializeGameTable();
+    }
+
+    public void InitializeGameTable()
+    {
+        for (int row = 0; row < _tableSize; row++)
+        {
+            GameTable[row] = new char[_tableSize];
+            for (int column = 0; column < _tableSize; column++)
+            {
+                GameTable[row][column] = column % 2 == 0 ? 'X' : 'O';
+            }
+        }
+    }
+
+    public string GetBorderStyle(int row, int column)
+    {
+        string removeBorderLeft = "border-left: 0";
+        string removeBorderRight = "border-right: 0";
+        string removeBorderTop = "border-top: 0";
+        string removeBorderBottom = "border-bottom: 0";
+        string style = string.Empty;
+
+        List<string> styleProperties = new List<string>();
+
+        if (column == 0)
+            styleProperties.Add(removeBorderLeft);
+
+        if (column == GameTable[row].Length - 1)
+            styleProperties.Add(removeBorderRight);
+
+        if (row == 0)
+            styleProperties.Add(removeBorderTop);
+
+        if (row == GameTable.Length - 1)
+            styleProperties.Add(removeBorderBottom);
+
+        style = string.Join("; ", styleProperties);
+        return style;
+    }
+}
