@@ -40,13 +40,15 @@
 }
 
 .win {
-    /*background: #48ceff;*/
     color: lightseagreen;
 }
 
 .lose {
-    /*background: #48ceff;*/
     color: lightcoral;
+}
+
+.draw {
+    color: lightslategray;
 }
 
 .replay {

@@ -4,7 +4,7 @@
 
 
 <div class="playerturn">
-    <p>@(PlayerName)'s turn: X</p>
+    <p>@(CurrentPlayer)'s turn: @(GetBoxValue((int)CurrentValue))</p>
 </div>
 
 <div class="gameboard">
@@ -12,7 +12,9 @@
     {
         @for (int column = 0; column < GameTable[row].Length; column++)
         {
-            <div class="box" id="row@(row)_col@(column)" style="@(GetBorderStyle(row, column))">
+            int rowParam = row;
+            int colParam = column;
+            <div class="box" id="row@(row)_col@(column)" style="@(GetBorderStyle(row, column))" @onclick="() => BoxClick(rowParam, colParam)" >
                 <p>@(GetBoxValue(GameTable[row][column]))</p>
             </div>
         }
@@ -28,6 +30,9 @@
         case Result.Lose:
             <p class="lose">You've lost!</p>
             break;
+        case Result.Draw:
+            <p class="draw">It's a draw!</p>
+            break;
     }
 </div>
 
@@ -42,36 +47,76 @@
     {
         None = 0,
         Lose = 1,
-        Win = 2
+        Win = 2,
+        Draw = 3
     }
 
-    public string PlayerName { get; set; } = "Player 1";
+    public enum BoxValue
+    {
+        Empty = -1,
+        O = 0,
+        X = 1
+    }
 
-    public Result PlayerResult { get; set; } = Result.Win; // Result.None;
+    public string PlayerOne { get; set; } = "Player 1";
+
+    public string PlayerTwo { get; set; } = "Player 2";
+
+    public string CurrentPlayer
+    {
+        get
+        {
+            return CurrentValue == BoxValue.X ? PlayerOne : PlayerTwo;
+        }
+    }
+
+    public Result PlayerResult { get; set; } = Result.None;
+
+    private BoxValue _currentValue = BoxValue.X; // Default value
+
+    public BoxValue CurrentValue
+    {
+        get
+        {
+            return _currentValue;
+        }
+    }
+
+    public BoxValue NextValue
+    {
+        get
+        {
+            return _currentValue;
+        }
+        set
+        {
+            _currentValue = value;
+        }
+    }
 
     public int[][] GameTable = new int[_tableSize][];
 
     protected override void OnInitialized()
     {
-        InitializeGameTable(1);
+        InitializeGameTable(BoxValue.Empty);
     }
 
     public char GetBoxValue(int boxValue) => boxValue switch
     {
-        -1 => ' ',
-        0 => 'O',
-        1 => 'X',
+        (int)BoxValue.Empty => ' ',
+        (int)BoxValue.O => 'O',
+        (int)BoxValue.X => 'X',
         _ => ' '
     };
 
-    public void InitializeGameTable(int number)
+    public void InitializeGameTable(BoxValue boxValue)
     {
         for (int row = 0; row < _tableSize; row++)
         {
             GameTable[row] = new int[_tableSize];
             for (int column = 0; column < _tableSize; column++)
             {
-                GameTable[row][column] = number;
+                GameTable[row][column] = (int)boxValue;
             }
         }
     }
@@ -79,7 +124,76 @@
     public void Replay()
     {
         PlayerResult = Result.None;
-        InitializeGameTable(-1);
+        NextValue = BoxValue.X;
+        InitializeGameTable(BoxValue.Empty);
+    }
+
+    public void BoxClick(int row, int column)
+    {
+        GameTable[row][column] = (int)CurrentValue;
+        CheckForResult();
+        NextValue = CurrentValue == BoxValue.X ? BoxValue.O : BoxValue.X;
+    }
+
+    public void CheckForResult()
+    {
+        // Check Horizontally
+        for (int row = 0; row < _tableSize; row++)
+        {
+            if (GameTable[row][0] == (int)_currentValue && GameTable[row][1] == (int)_currentValue && GameTable[row][2] == (int)_currentValue)
+            {
+                PlayerResult = Result.Win;
+                return;
+            }
+        }
+
+        // Check Vertically
+        for (int column = 0; column < _tableSize; column++)
+        {
+            if (GameTable[0][column] == (int)_currentValue && GameTable[1][column] == (int)_currentValue && GameTable[2][column] == (int)_currentValue)
+            {
+                PlayerResult = Result.Win;
+                return;
+            }
+        }
+
+        // Check Diagonally
+        if (GameTable[0][0] == (int)_currentValue && GameTable[1][1] == (int)_currentValue && GameTable[2][2] == (int)_currentValue)
+        {
+            PlayerResult = Result.Win;
+            return;
+        }
+        if (GameTable[0][2] == (int)_currentValue && GameTable[1][1] == (int)_currentValue && GameTable[2][0] == (int)_currentValue)
+        {
+            PlayerResult = Result.Win;
+            return;
+        }
+
+        // In case none of the above are true and every cell is full, it's a draw
+        bool isDraw = true;
+        for (int row = 0; row < _tableSize; row++)
+        {
+            if (!isDraw)
+                break;
+            for (int column = 0; column < _tableSize; column++)
+            {
+                if (GameTable[row][column] == (int)BoxValue.Empty)
+                {
+                    isDraw = false;
+                    break;
+                }
+            }
+        }
+
+        if (isDraw)
+            PlayerResult = Result.Draw;
+        else
+            PlayerResult = Result.None;
+    }
+
+    public void DrawResult(int row, int column)
+    {
+        // TODO
     }
 
     public string GetBorderStyle(int row, int column)
@@ -95,13 +209,13 @@
         if (column == 0)
             styleProperties.Add(removeBorderLeft);
 
-        if (column == GameTable[row].Length - 1)
+        if (column == _tableSize - 1)
             styleProperties.Add(removeBorderRight);
 
         if (row == 0)
             styleProperties.Add(removeBorderTop);
 
-        if (row == GameTable.Length - 1)
+        if (row == _tableSize - 1)
             styleProperties.Add(removeBorderBottom);
 
         style = string.Join("; ", styleProperties);
