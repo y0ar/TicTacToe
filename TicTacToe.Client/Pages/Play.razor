@@ -130,9 +130,13 @@
 
     public void BoxClick(int row, int column)
     {
-        GameTable[row][column] = (int)CurrentValue;
-        CheckForResult();
-        NextValue = CurrentValue == BoxValue.X ? BoxValue.O : BoxValue.X;
+        int cellValue = GameTable[row][column];
+        if (cellValue == (int)BoxValue.Empty)
+        {
+            GameTable[row][column] = (int)CurrentValue;
+            CheckForResult();
+            NextValue = CurrentValue == BoxValue.X ? BoxValue.O : BoxValue.X;
+        }
     }
 
     public void CheckForResult()
