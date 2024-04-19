@@ -131,7 +131,7 @@
     public void BoxClick(int row, int column)
     {
         int cellValue = GameTable[row][column];
-        if (cellValue == (int)BoxValue.Empty)
+        if (cellValue == (int)BoxValue.Empty && PlayerResult == Result.None)
         {
             GameTable[row][column] = (int)CurrentValue;
             CheckForResult();
